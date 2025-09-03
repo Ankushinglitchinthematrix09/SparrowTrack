@@ -1,0 +1,649 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SparrowTrack - Attendance System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b, #ffa726, #42a5f5);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, #ff6b6b, #ffa726, #42a5f5); }
+            50% { background: linear-gradient(135deg, #42a5f5, #ff6b6b, #ffa726); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            transform: rotate(-5deg);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(-5deg) translateY(0px); }
+            50% { transform: rotate(-5deg) translateY(-10px); }
+        }
+
+        .logo::before {
+            content: "🕊️";
+            font-size: 40px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .sparrow-text {
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .auth-container {
+            display: block;
+        }
+
+        .auth-container.hidden {
+            display: none;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 2px solid #e1e1e1;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .toggle-link {
+            color: #ff6b6b;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-link:hover {
+            color: #ffa726;
+            text-decoration: underline;
+        }
+
+        .user-info {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #ff6b6b;
+        }
+
+        .user-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .user-id {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .attendance-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-punch {
+            padding: 20px;
+            font-size: 1rem;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-punch-in {
+            background: linear-gradient(45deg, #4caf50, #66bb6a);
+            color: white;
+        }
+
+        .btn-punch-in:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-punch-out {
+            background: linear-gradient(45deg, #f44336, #ef5350);
+            color: white;
+        }
+
+        .btn-punch-out:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(244, 67, 54, 0.3);
+        }
+
+        .current-status {
+            background: rgba(66, 165, 245, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #42a5f5;
+        }
+
+        .status-text {
+            color: #42a5f5;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .time-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .records-section {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .records-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .record-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .record-date {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .record-time {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .error {
+            color: #f44336;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .success {
+            color: #4caf50;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"></div>
+        <h1><span class="sparrow-text">Sparrow</span>Track</h1>
+        <p class="subtitle">Attendance System</p>
+
+        <!-- Authentication Container -->
+        <div class="auth-container" id="authContainer">
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Sign In</button>
+                <button class="btn btn-secondary" onclick="showRegister()">Create New Account</button>
+                <div id="loginError" class="error"></div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" placeholder="Enter your email">
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Create a password">
+                </div>
+                <div class="form-group">
+                    <label for="regDepartment">Department</label>
+                    <input type="text" id="regDepartment" placeholder="Enter your department">
+                </div>
+                <div class="form-group">
+                    <label for="regPosition">Position</label>
+                    <input type="text" id="regPosition" placeholder="Enter your position">
+                </div>
+                <button class="btn btn-primary" onclick="register()">Create Account</button>
+                <button class="btn btn-secondary" onclick="showLogin()">Back to Login</button>
+                <div id="registerError" class="error"></div>
+                <div id="registerSuccess" class="success"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <div class="user-info">
+                <div class="user-name" id="userName"></div>
+                <div class="user-id" id="userDetails"></div>
+            </div>
+
+            <div class="current-status" id="currentStatus">
+                <div class="status-text">Current Status: <span id="statusText">Logged Out</span></div>
+                <div class="time-display" id="currentTime"></div>
+            </div>
+
+            <div class="attendance-actions">
+                <button class="btn-punch btn-punch-in" onclick="punchIn()" id="punchInBtn">
+                    Punch In
+                </button>
+                <button class="btn-punch btn-punch-out" onclick="punchOut()" id="punchOutBtn">
+                    Punch Out
+                </button>
+            </div>
+
+            <div class="records-section">
+                <div class="records-title">Today's Records</div>
+                <div id="todayRecords"></div>
+            </div>
+
+            <button class="btn logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || {};
+        let users = JSON.parse(localStorage.getItem('users')) || {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showDashboard();
+            }
+        });
+
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const timeDisplay = document.getElementById('currentTime');
+            if (timeDisplay) {
+                timeDisplay.textContent = timeString;
+            }
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        function register() {
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const department = document.getElementById('regDepartment').value.trim();
+            const position = document.getElementById('regPosition').value.trim();
+            
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+
+            if (!name || !email || !password || !department || !position) {
+                errorDiv.textContent = 'Please fill in all fields';
+                return;
+            }
+
+            if (users[email]) {
+                errorDiv.textContent = 'User already exists with this email';
+                return;
+            }
+
+            const employeeId = 'EMP' + Date.now();
+            users[email] = {
+                id: employeeId,
+                name: name,
+                email: email,
+                password: password,
+                department: department,
+                position: position,
+                registeredDate: new Date().toISOString()
+            };
+
+            localStorage.setItem('users', JSON.stringify(users));
+            successDiv.textContent = 'Account created successfully! You can now login.';
+            
+            setTimeout(() => {
+                showLogin();
+                successDiv.textContent = '';
+            }, 2000);
+        }
+
+        function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const errorDiv = document.getElementById('loginError');
+            
+            errorDiv.textContent = '';
+
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password';
+                return;
+            }
+
+            if (!users[email] || users[email].password !== password) {
+                errorDiv.textContent = 'Invalid email or password';
+                return;
+            }
+
+            currentUser = users[email];
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showDashboard();
+        }
+
+        function showDashboard() {
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('dashboard').classList.add('active');
+            
+            document.getElementById('userName').textContent = currentUser.name;
+            document.getElementById('userDetails').textContent = `${currentUser.position} | ${currentUser.department} | ID: ${currentUser.id}`;
+            
+            updateAttendanceStatus();
+            loadTodayRecords();
+        }
+
+        function updateAttendanceStatus() {
+            const today = new Date().toDateString();
+            const userRecords = attendanceRecords[currentUser.email] || {};
+            const todayRecord = userRecords[today];
+            
+            const statusText = document.getElementById('statusText');
+            const punchInBtn = document.getElementById('punchInBtn');
+            const punchOutBtn = document.getElementById('punchOutBtn');
+            
+            if (!todayRecord || !todayRecord.punchIn) {
+                statusText.textContent = 'Not Punched In';
+                punchInBtn.disabled = false;
+                punchOutBtn.disabled = true;
+                punchOutBtn.style.opacity = '0.5';
+                punchInBtn.style.opacity = '1';
+            } else if (todayRecord.punchIn && !todayRecord.punchOut) {
+                statusText.textContent = 'Punched In';
+                punchInBtn.disabled = true;
+                punchOutBtn.disabled = false;
+                punchInBtn.style.opacity = '0.5';
+                punchOutBtn.style.opacity = '1';
+            } else {
+                statusText.textContent = 'Work Complete';
+                punchInBtn.disabled = true;
+                punchOutBtn.disabled = true;
+                punchInBtn.style.opacity = '0.5';
+                punchOutBtn.style.opacity = '0.5';
+            }
+        }
+
+        function punchIn() {
+            const now = new Date();
+            const today = now.toDateString();
+            const time = now.toLocaleTimeString();
+            
+            if (!attendanceRecords[currentUser.email]) {
+                attendanceRecords[currentUser.email] = {};
+            }
+            
+            if (!attendanceRecords[currentUser.email][today]) {
+                attendanceRecords[currentUser.email][today] = {};
+            }
+            
+            attendanceRecords[currentUser.email][today].punchIn = time;
+            attendanceRecords[currentUser.email][today].date = today;
+            
+            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+            updateAttendanceStatus();
+            loadTodayRecords();
+        }
+
+        function punchOut() {
+            const now = new Date();
+            const today = now.toDateString();
+            const time = now.toLocaleTimeString();
+            
+            if (attendanceRecords[currentUser.email] && attendanceRecords[currentUser.email][today]) {
+                attendanceRecords[currentUser.email][today].punchOut = time;
+                
+                // Calculate working hours
+                const punchInTime = new Date(`${today} ${attendanceRecords[currentUser.email][today].punchIn}`);
+                const punchOutTime = new Date(`${today} ${time}`);
+                const workingHours = ((punchOutTime - punchInTime) / (1000 * 60 * 60)).toFixed(2);
+                
+                attendanceRecords[currentUser.email][today].workingHours = workingHours;
+                
+                localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+                updateAttendanceStatus();
+                loadTodayRecords();
+            }
+        }
+
+        function loadTodayRecords() {
+            const today = new Date().toDateString();
+            const userRecords = attendanceRecords[currentUser.email] || {};
+            const todayRecord = userRecords[today];
+            const recordsDiv = document.getElementById('todayRecords');
+            
+            if (!todayRecord) {
+                recordsDiv.innerHTML = '<div class="record-item">No records for today</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            if (todayRecord.punchIn) {
+                html += `
+                    <div class="record-item">
+                        <div>
+                            <div class="record-date">Punch In</div>
+                            <div class="record-time">${todayRecord.punchIn}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (todayRecord.punchOut) {
+                html += `
+                    <div class="record-item">
+                        <div>
+                            <div class="record-date">Punch Out</div>
+                            <div class="record-time">${todayRecord.punchOut}</div>
+                        </div>
+                    </div>
+                `;
+                
+                if (todayRecord.workingHours) {
+                    html += `
+                        <div class="record-item">
+                            <div>
+                                <div class="record-date">Working Hours</div>
+                                <div class="record-time">${todayRecord.workingHours} hours</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            recordsDiv.innerHTML = html;
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('authContainer').classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('active');
+            
+            // Clear forms
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').textContent = '';
+        }
+    </script>
+</body>
+</html>

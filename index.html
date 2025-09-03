@@ -38,27 +38,30 @@
         }
 
         .logo {
-            width: 80px;
+            width: 100px;
             height: 80px;
             margin: 0 auto 20px;
-            background: linear-gradient(45deg, #ff6b6b, #ffa726);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
-            transform: rotate(-5deg);
+            transform: rotate(-2deg);
             animation: float 3s ease-in-out infinite;
+            padding: 10px;
         }
 
         @keyframes float {
-            0%, 100% { transform: rotate(-5deg) translateY(0px); }
-            50% { transform: rotate(-5deg) translateY(-10px); }
+            0%, 100% { transform: rotate(-2deg) translateY(0px); }
+            50% { transform: rotate(-2deg) translateY(-10px); }
         }
 
-        .logo::before {
-            content: "";
-            font-size: 40px;
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
         }
 
         h1 {
@@ -319,7 +322,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo"></div>
+        <div class="logo">
+            <img src="flying-sparrow-logo.png" alt="Flying Sparrow Logo" id="logoImg">
+        </div>
         <h1><span class="sparrow-text">Sparrow</span>Track</h1>
         <p class="subtitle">Attendance System</p>
 
@@ -401,19 +406,52 @@
 
     <script>
         let currentUser = null;
-        let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords')) || {};
-        let users = JSON.parse(localStorage.getItem('users')) || {};
+        let attendanceRecords = {};
+        let users = {};
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            // Load logo from uploaded file if available
+            if (window.fs && window.fs.readFile) {
+                try {
+                    window.fs.readFile('flying-sparrow-logo.png')
+                        .then(data => {
+                            const blob = new Blob([data], { type: 'image/png' });
+                            const url = URL.createObjectURL(blob);
+                            document.getElementById('logoImg').src = url;
+                        })
+                        .catch(err => {
+                            console.log('Could not load custom logo, using placeholder');
+                            // Fallback to a placeholder or keep the original emoji
+                            document.querySelector('.logo').innerHTML = '<div style="font-size: 40px;">🕊️</div>';
+                        });
+                } catch (error) {
+                    console.log('File system not available, using placeholder');
+                    document.querySelector('.logo').innerHTML = '<div style="font-size: 40px;">🕊️</div>';
+                }
+            } else {
+                // Fallback when file system is not available
+                document.querySelector('.logo').innerHTML = '<div style="font-size: 40px;">🕊️</div>';
+            }
+
             updateCurrentTime();
             setInterval(updateCurrentTime, 1000);
             
             // Check if user is already logged in
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                showDashboard();
+            try {
+                const savedUser = localStorage.getItem('currentUser');
+                const savedUsers = localStorage.getItem('users');
+                const savedRecords = localStorage.getItem('attendanceRecords');
+                
+                if (savedUsers) users = JSON.parse(savedUsers);
+                if (savedRecords) attendanceRecords = JSON.parse(savedRecords);
+                
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                    showDashboard();
+                }
+            } catch (error) {
+                console.log('Error loading saved data:', error);
             }
         });
 
@@ -470,13 +508,17 @@
                 registeredDate: new Date().toISOString()
             };
 
-            localStorage.setItem('users', JSON.stringify(users));
-            successDiv.textContent = 'Account created successfully! You can now login.';
-            
-            setTimeout(() => {
-                showLogin();
-                successDiv.textContent = '';
-            }, 2000);
+            try {
+                localStorage.setItem('users', JSON.stringify(users));
+                successDiv.textContent = 'Account created successfully! You can now login.';
+                
+                setTimeout(() => {
+                    showLogin();
+                    successDiv.textContent = '';
+                }, 2000);
+            } catch (error) {
+                errorDiv.textContent = 'Error creating account. Please try again.';
+            }
         }
 
         function login() {
@@ -497,8 +539,12 @@
             }
 
             currentUser = users[email];
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showDashboard();
+            try {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showDashboard();
+            } catch (error) {
+                errorDiv.textContent = 'Error logging in. Please try again.';
+            }
         }
 
         function showDashboard() {
@@ -558,9 +604,13 @@
             attendanceRecords[currentUser.email][today].punchIn = time;
             attendanceRecords[currentUser.email][today].date = today;
             
-            localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-            updateAttendanceStatus();
-            loadTodayRecords();
+            try {
+                localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+                updateAttendanceStatus();
+                loadTodayRecords();
+            } catch (error) {
+                console.error('Error saving attendance record:', error);
+            }
         }
 
         function punchOut() {
@@ -578,9 +628,13 @@
                 
                 attendanceRecords[currentUser.email][today].workingHours = workingHours;
                 
-                localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-                updateAttendanceStatus();
-                loadTodayRecords();
+                try {
+                    localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+                    updateAttendanceStatus();
+                    loadTodayRecords();
+                } catch (error) {
+                    console.error('Error saving attendance record:', error);
+                }
             }
         }
 
@@ -635,7 +689,12 @@
 
         function logout() {
             currentUser = null;
-            localStorage.removeItem('currentUser');
+            try {
+                localStorage.removeItem('currentUser');
+            } catch (error) {
+                console.error('Error clearing user data:', error);
+            }
+            
             document.getElementById('authContainer').classList.remove('hidden');
             document.getElementById('dashboard').classList.remove('active');
             

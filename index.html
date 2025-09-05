@@ -323,7 +323,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="flying-sparrow-logo.png.jpeg" alt="Flying Sparrow Logo" id="logoImg">
+            <img src="flying-sparrow-logo.png" alt="Flying Sparrow Logo" id="logoImg">
         </div>
         <h1><span class="sparrow-text">Sparrow</span>Track</h1>
         <p class="subtitle">Attendance System</p>
@@ -411,29 +411,6 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Load logo from uploaded file if available
-            if (window.fs && window.fs.readFile) {
-                try {
-                    window.fs.readFile('flying-sparrow-logo.png')
-                        .then(data => {
-                            const blob = new Blob([data], { type: 'image/png' });
-                            const url = URL.createObjectURL(blob);
-                            document.getElementById('logoImg').src = url;
-                        })
-                        .catch(err => {
-                            console.log('Could not load custom logo, using placeholder');
-                            // Fallback to a placeholder or keep the original emoji
-                            document.querySelector('.logo').innerHTML = '<div style="font-size: 40px;">🕊️</div>';
-                        });
-                } catch (error) {
-                    console.log('File system not available, using placeholder');
-                    document.querySelector('.logo').innerHTML = '<div style="font-size: 40px;">🕊️</div>';
-                }
-            } else {
-                // Fallback when file system is not available
-                document.querySelector('.logo').innerHTML = '<div style="font-size: 40px;">🕊️</div>';
-            }
-
             updateCurrentTime();
             setInterval(updateCurrentTime, 1000);
             
